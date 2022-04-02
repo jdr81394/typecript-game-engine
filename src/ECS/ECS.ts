@@ -1,5 +1,4 @@
-
-type ComponentType = "RigidBodyComponent" | "VelocityComponent";
+export type ComponentType = "RigidBodyComponent" | "VelocityComponent";
 
 export class Entity {
     private id: number;
@@ -13,17 +12,19 @@ export class Entity {
         return this.id;
     }
 
+    public AddComponent<TArgs>( componentType : ComponentType ,  ...args: TArgs[]): void {
+        this.registry.AddComponent(componentType, this, args);
+    }
+
 
 };
 
 
-class IComponent {
+export class IComponent {
     static nextId : number;
 };
 
-type RigidBodyComponent = {
 
-}
 
 type GenericObject<T> = {
   
@@ -106,31 +107,45 @@ export class Registry {
     
     constructor() {}
 
-    public AddComponent<TComponent extends Iterable<any> , TArgs>(componentType : ComponentType, entity : Entity, ...args : TArgs[] ) : void {
+    public AddComponent<TComponent, TArgs>(componentType : ComponentType, entity : Entity, ...args : TArgs[] ) : void {
 
         const componentExists = this.componentMap.has(componentType);
 
+        console.log(componentExists);
+
         if(!componentExists) {
-            this.componentMap.set(componentType, this.numberOfComponents);
+            console.log(this.componentMap.set(componentType, this.numberOfComponents));
         }
 
         const componentId  = this.componentMap.get(componentType) as number;
 
         const entityId = entity.GetId();
 
+        console.log("componentId: " , componentId , " and EntityId: " , entityId);
         // Now lets go through the componentPool and make a componentPool if one does not already exist
         if(!this.componentPools[componentId])  {    // if componentPool does not exist
             const newComponentPool : Pool<TComponent> = new Pool();
             this.componentPools[componentId] = newComponentPool;
+            console.log("this componentPools[componentId]: " , this.componentPools[componentId]);
         }
 
         // Now, let's create a new component and put it into that place
 
         let newComponent : Component<TComponent> = new Component<TComponent>(...args);
 
-        // this.componentPools[componentId] = 
+        this.componentPools[componentId] = newComponent;
 
+        console.log("new component: " , newComponent);
 
+        console.log("this componentPools[componentId]", this.componentPools[componentId])
+
+        // Now lets set the eneityComponentSignature
+        this.entityComponentSignature[entityId][componentId] = true;
+
+    }
+
+    public CreateEntity() : Entity {
+        return new Entity(this.numberOfEntities++, this);
     }
 
 
