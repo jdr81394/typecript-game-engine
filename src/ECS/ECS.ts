@@ -1,3 +1,5 @@
+// import RigidBodyComponent from "../Components/RigidBodyComponent";
+
 export type ComponentType = "RigidBodyComponent" | "VelocityComponent";
 
 export class Entity {
@@ -12,8 +14,8 @@ export class Entity {
         return this.id;
     }
 
-    public AddComponent<TArgs>( componentType : ComponentType ,  ...args: TArgs[]): void {
-        this.registry.AddComponent(componentType, this, args);
+    public AddComponent<TComponent>( componentType : ComponentType ,  ...args: any[]): void {
+        this.registry.AddComponent<TComponent, any>(componentType, this, args);
     }
 
 
@@ -30,13 +32,11 @@ type GenericObject<T> = {
   
 }
 
-export class Component<T> extends IComponent {
+export class Component extends IComponent {
     public static id: number;
-    public data: GenericObject<T>;
     constructor(...args : any ) {
         super();
         Component.id = IComponent.nextId++;
-        this.data = { ...args };
     }
 
     static GetId() : number {
@@ -44,6 +44,16 @@ export class Component<T> extends IComponent {
     }
 };
 
+class RigidBodyComponent extends Component {
+    x: number;
+    y: number;
+    constructor(...args: number[]){
+
+        super();
+        this.x = args[0]
+        this.y = args[1];
+    };
+}
 class IPool {
     
     constructor() {}
@@ -107,7 +117,7 @@ export class Registry {
     
     constructor() {}
 
-    public AddComponent<TComponent, TArgs>(componentType : ComponentType, entity : Entity, ...args : TArgs[] ) : void {
+    public AddComponent<TComponent extends Component, TArgs>(componentType : ComponentType, entity : Entity, ...args : TArgs[] ) : void {
 
         const componentExists = this.componentMap.has(componentType);
 
@@ -121,26 +131,37 @@ export class Registry {
 
         const entityId = entity.GetId();
 
-        console.log("componentId: " , componentId , " and EntityId: " , entityId);
         // Now lets go through the componentPool and make a componentPool if one does not already exist
         if(!this.componentPools[componentId])  {    // if componentPool does not exist
             const newComponentPool : Pool<TComponent> = new Pool();
             this.componentPools[componentId] = newComponentPool;
-            console.log("this componentPools[componentId]: " , this.componentPools[componentId]);
         }
 
         // Now, let's create a new component and put it into that place
 
-        let newComponent : Component<TComponent> = new Component<TComponent>(...args);
+        let instance = eval(`new ${componentType}(${args})`);       // Really bad practice for prod env but for fun this is acceptable
 
-        this.componentPools[componentId] = newComponent;
+        this.componentPools[componentId] = instance;
 
-        console.log("new component: " , newComponent);
+        // // Now lets set the eneityComponentSignature
+        if(this.entityComponentSignature.length <= entityId ) {
+            this.entityComponentSignature.length = entityId + 5;
+            console.log("first if");
+            console.log(this.entityComponentSignature);
+        }
 
-        console.log("this componentPools[componentId]", this.componentPools[componentId])
+        if(!this.entityComponentSignature[entityId]) {
+            const boolArr: boolean[] = new Array<boolean>();
+            this.entityComponentSignature[entityId] = boolArr;
+        }
 
-        // Now lets set the eneityComponentSignature
+        console.log(this.entityComponentSignature[entityId]);
+        if(this.entityComponentSignature[entityId].length <= componentId) {
+            this.entityComponentSignature[entityId].length = componentId + 5;
+        }
+
         this.entityComponentSignature[entityId][componentId] = true;
+        console.log(this.entityComponentSignature[entityId][componentId]);
 
     }
 

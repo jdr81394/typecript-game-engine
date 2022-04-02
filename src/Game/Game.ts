@@ -32,3 +32,7 @@ export class Game {
 
     public Deconstructor(){}
 }
+
+// var instance = Object.create(this.context[name].prototype);
+// instance.constructor.apply(instance, args);
+// return instance;
