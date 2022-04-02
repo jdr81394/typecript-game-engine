@@ -1,8 +1,15 @@
 import React from 'react';
 import logo from './logo.svg';
+import {Game} from "./Game/Game";
+
 import './App.css';
 
 function App() {
+
+  const game : Game = new Game();
+
+  game.Run();
+  
   return (
     <div className="App">
       <header className="App-header">
