@@ -95,19 +95,12 @@ export class System{
 
     public RequireComponent(componentType: ComponentType) : void {
 
-        console.log("componentType: " , Registry.systemMap);
-
-        if(Registry.componentMap.has(componentType) === false) {
-            console.log("in system map doesnt have" , Registry.componentMap);
-            Registry.componentMap.set(componentType, Registry.numberOfComponents++)
-            console.log("in system map doesnt have AFTER" , Registry.componentMap);
+        if(Registry.componentMap[componentType] === undefined ) {
+            Registry.componentMap[componentType] = Registry.numberOfComponents++;
         }
 
-        console.log(Registry.systemMap.get(componentType));
-        let componentId : number = Registry.systemMap.get(componentType) as number;
+        let componentId : number = Registry.componentMap[componentType] as number;
         
-        console.log("ComponentId:  " , componentId ); 
-
         this.componentSignature[componentId] = true;
     }
 
@@ -129,7 +122,7 @@ export class Registry {
     // 2nd is for each component that could exist and if the entity is still interested in it
     private entityComponentSignature : boolean[][] = []; // keeps track of which entity is on for a given entity. An array of boolean arrays
 
-    static componentMap: Map<string, number> = new Map(); // k = name of class, v = id
+    static componentMap: any = new Object(); // k = name of class, v = id
 
     static numberOfComponents: number = 0;
 
@@ -139,20 +132,20 @@ export class Registry {
 
     private systems : any[] = [];
 
-    static systemMap: Map<string, number> = new Map();
+    static systemMap: any = new Object();
 
     
     constructor() {}
 
     public AddComponent<TComponent, TArgs>(componentType : ComponentType, entity : Entity, ...args : TArgs[] ) : void {
 
-        const componentExists = Registry.componentMap.has(componentType);
+        const componentExists = Registry.componentMap[componentType];
 
         if(!componentExists) {
-            Registry.componentMap.set(componentType, Registry.numberOfComponents++);
+            Registry.componentMap[componentType] = Registry.numberOfComponents++;
         }
 
-        const componentId  = Registry.componentMap.get(componentType) as number;
+        const componentId : number  = Registry.componentMap[componentType] as number;
 
         const entityId = entity.GetId();
 
@@ -237,11 +230,11 @@ export class Registry {
 
         this.systems.push(system);
 
-        if(!Registry.systemMap.has(systemType) ) {
+        if(!Registry.systemMap[systemType] ) {
 
             const indice = this.systems.length - 1;
 
-            Registry.systemMap.set(systemType, indice);
+            Registry.systemMap[systemType] = indice;
         }
     }
     
