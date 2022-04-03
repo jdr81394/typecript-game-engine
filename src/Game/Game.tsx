@@ -4,16 +4,16 @@ import { Entity, Component, System, Registry, ComponentType } from "../ECS/ECS";
 
 interface GameState {
     isRunning: boolean;
-    registry: Registry;
     windowHeight: number,
     windowWidth: number
 };
 
+
 export class Game extends ReactComponent {
+    registry : Registry = new Registry();
     
     state : GameState = {
         isRunning: false,
-        registry : new Registry(),
         windowHeight: 0,
         windowWidth: 0
     }
@@ -21,17 +21,18 @@ export class Game extends ReactComponent {
 
     constructor(props: any = null) {
         super(props);
-        this.Run();
         this.handleResize = this.handleResize.bind(this);
+        console.log("constructor");
 
+        this.registry.AddSystem("RenderSystem", this.registry);
     }
 
-    componentDidMount() {
+    componentDidMount() : void {
         console.log("component did mount, state: " , this.state);
         if(this.state.isRunning === false ) 
             this.setState({
                 isRunning: true
-            });
+            }, () => this.Run() );
 
         this.setListeners();
     }
@@ -40,15 +41,15 @@ export class Game extends ReactComponent {
 
     }
 
-    private setListeners() {
+    private setListeners(): void{
         window.addEventListener("resize", this.handleResize);
     }
 
-    private removeListeners(){
+    private removeListeners(): void {
         window.removeEventListener("resize", this.handleResize);
     }
 
-    public handleResize() {
+    public handleResize(): void {
         const { innerHeight, innerWidth } = window;
         this.setState({
             windowHeight: innerHeight,
@@ -56,23 +57,27 @@ export class Game extends ReactComponent {
         })
     }
 
-    private Run(){
-        console.log("Running");
+    private Run() : void {
 
-        const car : Entity = this.state.registry.CreateEntity();
+        const car : Entity = this.registry.CreateEntity();
+        
         car.AddComponent("RigidBodyComponent", 32,32, 32,32);
-        console.log(car);
-        // this.registry.AddComponent<RigidBodyComponent, any>("RigidBodyComponent",car, 1,2);
-        // const rigidBodyComponent : RigidBodyComponent = new Component<RigidBodyComponent>(1,1);
-        // while(this.isRunning) {
-        //     // this.Render();
-        //     // this.Update();
+        this.Update();
+
+        // while(this.state.isRunning) {
+            // this.Render();
         // }
     }
 
-    private Destroy (){
-        this.removeListeners();
+    private async Update() : Promise<void> {
+        this.registry.AddEntitiesToSystem();
+        
+        
     }
+
+    private Destroy (): void {
+        this.removeListeners();
+    };
 
     render() {
         return(<div>

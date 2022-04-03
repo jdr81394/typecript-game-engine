@@ -1,3 +1,5 @@
+// import RenderSystem from "../Systems/RenderSystem";
+
 export class Entity {
     private id: number;
     public registry: Registry;
@@ -77,18 +79,41 @@ class Pool<T> extends IPool {
 
 };
 
-export class System {
-    private entities : Entity[] = [];
+class ISystem {
+    constructor(){}
+}
+
+export class System{
+    protected entities : Entity[] = [];
     private componentSignature: boolean[] = []; // What components the system is interested in
-    constructor() {}
+    private registry: Registry;
+    constructor(registry: Registry) {
+        this.registry = registry;
+    }
 
     public AddEntityToSystem(entity : Entity) : void {
         this.entities.push(entity);
     }
 
-    public RequireComponent(id : number) : void {
-        this.componentSignature[id] = true;
+    public RequireComponent(componentType: ComponentType) : void {
+
+        console.log("componentType: " , componentType);
+
+        if(!this.registry.systemMap.has(componentType)) {
+            this.registry.componentMap.set(componentType, this.registry.numberOfComponents)
+        }
+
+        let componentId : number = this.registry.systemMap.get(componentType) as number;
+        
+        console.log("ComponentId:  " , componentId ); 
+
+        this.componentSignature[componentId] = true;
     }
+
+    public GetComponentSignature() : boolean[] {
+        return this.componentSignature;
+    }
+    
 
 };
 
@@ -103,11 +128,18 @@ export class Registry {
     // 2nd is for each component that could exist and if the entity is still interested in it
     private entityComponentSignature : boolean[][] = []; // keeps track of which entity is on for a given entity. An array of boolean arrays
 
-    private componentMap: Map<string, number> = new Map(); // k = name of class, v = id
+    public componentMap: Map<string, number> = new Map(); // k = name of class, v = id
 
-    private numberOfComponents: number = 0;
+    public numberOfComponents: number = 0;
 
     private numberOfEntities : number = 0;
+
+    private entitiesToAdd : Entity[] = [];
+
+    private systems : any[] = [];
+
+    public systemMap: Map<string, number> = new Map();
+
     
     constructor() {}
 
@@ -132,7 +164,7 @@ export class Registry {
         // Now, let's create a new component and put it into that place
 
         let instance: TComponent = eval(`new ${componentType}(${args})`);       // Really bad practice for prod env but for fun this is acceptable
-
+        console.log("instance " , instance);
         this.componentPools[componentId] = instance;
 
         // // Now lets set the eneityComponentSignature
@@ -156,8 +188,80 @@ export class Registry {
     }
 
     public CreateEntity() : Entity {
-        return new Entity(this.numberOfEntities++, this);
+
+        const entity = new Entity(this.numberOfEntities++, this);
+        this.entitiesToAdd.push(entity);
+        console.log("entities to add: " , this.entitiesToAdd);
+        return entity;
     }
+
+    public AddEntitiesToSystem(): void {
+        console.log("this enetities to add: ", this.entitiesToAdd);
+        // Imagine this is a stack data structure, LIFO
+
+        for(let m = 0 ; m < this.entitiesToAdd.length; m++) {
+            // entity 1
+            // system 1
+            for(let i = 0; i < this.systems.length; i++) {
+
+                console.log("system : " , this.systems);
+                const systemComponentSignature : boolean[] = this.systems[i].GetComponentSignature();
+                // component signature of system 1
+                for(let j = 0; j < systemComponentSignature.length; j++) {
+
+                    if(systemComponentSignature[j] === true) {
+                        console.log(systemComponentSignature[j]);
+                        if(!this.entityComponentSignature[m][j]) {
+                            break;
+                        }
+                    }
+                    
+                }
+
+                // If nothing was out of line, then this was successful and add the entity to the system
+                this.systems[i].AddEntityToSystem(this.entitiesToAdd[m]);
+            }
+        }
+
+
+        this.entitiesToAdd = [];
+        
+    }
+
+    
+
+    public AddSystem (systemType : string, ...args: any ) {
+
+        const system = eval(`new ${systemType}(${args})`);
+
+        this.systems.push(system);
+
+        if(!this.systemMap.has(systemType) ) {
+
+            const indice = this.systems.length - 1;
+
+            this.systemMap.set(systemType, indice);
+        }
+    }
+    
 
 
 }
+
+
+class RenderSystem extends System {
+
+    constructor(props : any) {
+        super(props);
+        this.RequireComponent("RigidBodyComponent");
+    }
+
+    GetAllSystemEntities() : void {
+
+        this.entities.forEach((entity) => {
+
+            console.log("In get all system entities, heres the entity: " , entity);
+        });
+    }
+}
+
