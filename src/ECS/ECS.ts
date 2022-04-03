@@ -1,7 +1,3 @@
-// import RigidBodyComponent from "../Components/RigidBodyComponent";
-
-export type ComponentType = "RigidBodyComponent" | "VelocityComponent";
-
 export class Entity {
     private id: number;
     public registry: Registry;
@@ -21,16 +17,11 @@ export class Entity {
 
 };
 
+export type ComponentType = "RigidBodyComponent" | "VelocityComponent";
 
 export class IComponent {
     static nextId : number;
 };
-
-
-
-type GenericObject<T> = {
-  
-}
 
 export class Component extends IComponent {
     public static id: number;
@@ -47,15 +38,18 @@ export class Component extends IComponent {
 class RigidBodyComponent extends Component {
     x: number;
     y: number;
+    width: number;
+    height: number;
     constructor(...args: number[]){
 
         super();
         this.x = args[0]
         this.y = args[1];
+        this.width = args[2];
+        this.height = args[3];
     };
 }
 class IPool {
-    
     constructor() {}
 };
 
@@ -117,14 +111,12 @@ export class Registry {
     
     constructor() {}
 
-    public AddComponent<TComponent extends Component, TArgs>(componentType : ComponentType, entity : Entity, ...args : TArgs[] ) : void {
+    public AddComponent<TComponent, TArgs>(componentType : ComponentType, entity : Entity, ...args : TArgs[] ) : void {
 
         const componentExists = this.componentMap.has(componentType);
 
-        console.log(componentExists);
-
         if(!componentExists) {
-            console.log(this.componentMap.set(componentType, this.numberOfComponents));
+            this.componentMap.set(componentType, this.numberOfComponents);
         }
 
         const componentId  = this.componentMap.get(componentType) as number;
@@ -139,15 +131,13 @@ export class Registry {
 
         // Now, let's create a new component and put it into that place
 
-        let instance = eval(`new ${componentType}(${args})`);       // Really bad practice for prod env but for fun this is acceptable
+        let instance: TComponent = eval(`new ${componentType}(${args})`);       // Really bad practice for prod env but for fun this is acceptable
 
         this.componentPools[componentId] = instance;
 
         // // Now lets set the eneityComponentSignature
         if(this.entityComponentSignature.length <= entityId ) {
-            this.entityComponentSignature.length = entityId + 5;
-            console.log("first if");
-            console.log(this.entityComponentSignature);
+            this.entityComponentSignature.length = entityId + 1;
         }
 
         if(!this.entityComponentSignature[entityId]) {
@@ -155,13 +145,13 @@ export class Registry {
             this.entityComponentSignature[entityId] = boolArr;
         }
 
-        console.log(this.entityComponentSignature[entityId]);
         if(this.entityComponentSignature[entityId].length <= componentId) {
-            this.entityComponentSignature[entityId].length = componentId + 5;
+            this.entityComponentSignature[entityId].length = componentId + 1;
         }
 
         this.entityComponentSignature[entityId][componentId] = true;
-        console.log(this.entityComponentSignature[entityId][componentId]);
+        
+        this.numberOfComponents++;
 
     }
 

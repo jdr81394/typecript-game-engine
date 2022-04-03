@@ -19,3 +19,4 @@ class RigidBodyComponent extends Component {
 
 
 export default RigidBodyComponent;
+
