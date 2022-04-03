@@ -24,7 +24,8 @@ export class Game extends ReactComponent {
         this.handleResize = this.handleResize.bind(this);
         console.log("constructor");
 
-        this.registry.AddSystem("RenderSystem", this.registry);
+        this.registry.AddSystem("RenderSystem");
+
     }
 
     componentDidMount() : void {
