@@ -76,6 +76,10 @@ class Pool<T> extends IPool {
         this.data.push(t);
     }
 
+    public SetIndice(indice: number , component : T ) {
+        this.data[indice] = component;
+    }
+
 
 };
 
@@ -116,7 +120,7 @@ export class System{
 export class Registry {
     // 1st array = component Id
     // 2nd array = entity Id
-    private componentPools : IPool[] = [];  // Vector of component pools, each pool contains all the data for a certain compoenent type
+    private componentPools : any[] = [];  // Vector of component pools, each pool contains all the data for a certain compoenent type
 
     // 1st index = entity id
     // 2nd is for each component that could exist and if the entity is still interested in it
@@ -158,8 +162,8 @@ export class Registry {
         // Now, let's create a new component and put it into that place
 
         let instance: TComponent = eval(`new ${componentType}(${args})`);       // Really bad practice for prod env but for fun this is acceptable
-        console.log("instance " , instance);
-        this.componentPools[componentId] = instance;
+
+        this.componentPools[componentId].SetIndice(entityId, instance);
 
         // // Now lets set the eneityComponentSignature
         if(this.entityComponentSignature.length <= entityId ) {
@@ -185,12 +189,10 @@ export class Registry {
 
         const entity = new Entity(this.numberOfEntities++, this);
         this.entitiesToAdd.push(entity);
-        console.log("entities to add: " , this.entitiesToAdd);
         return entity;
     }
 
     public AddEntitiesToSystem(): void {
-        console.log("this enetities to add: ", this.entitiesToAdd);
         // Imagine this is a stack data structure, LIFO
 
         for(let m = 0 ; m < this.entitiesToAdd.length; m++) {
@@ -198,8 +200,8 @@ export class Registry {
             // system 1
             for(let i = 0; i < this.systems.length; i++) {
 
-                console.log("system : " , this.systems);
                 const systemComponentSignature : boolean[] = this.systems[i].GetComponentSignature();
+                
                 // component signature of system 1
                 for(let j = 0; j < systemComponentSignature.length; j++) {
 
@@ -224,7 +226,7 @@ export class Registry {
 
     
 
-    public AddSystem (systemType : string ) {
+    public AddSystem (systemType : string ) : void {
 
         const system = eval(`new ${systemType}()`);
 
@@ -236,6 +238,25 @@ export class Registry {
 
             Registry.systemMap[systemType] = indice;
         }
+    }
+
+
+    public UpdateSystems() : void {
+        for(let i = 0; i < this.systems.length; i++) {
+            this.systems[i].Update();
+        }
+    }
+
+    public GetComponent(componentType: ComponentType , entityId : number) : Component  {
+
+        const componentId : number = Registry.componentMap[componentType];
+
+        const componentPool : Pool<ComponentType> = this.componentPools[componentId] as Pool<ComponentType>;
+
+        const component  = componentPool.GetIndice(entityId) as Component;
+
+        return component;
+
     }
     
 
@@ -250,12 +271,17 @@ class RenderSystem extends System {
         this.RequireComponent("RigidBodyComponent");
     }
 
-    GetAllSystemEntities() : void {
+    public Update() : void {
 
         this.entities.forEach((entity) => {
 
-            console.log("In get all system entities, heres the entity: " , entity);
+            const rigidBodyComponent : Component = entity.registry.GetComponent("RigidBodyComponent", entity.GetId());
+
+            console.log("rigidbodycomponent!  : " , rigidBodyComponent);
+
         });
     }
+
+
 }
 

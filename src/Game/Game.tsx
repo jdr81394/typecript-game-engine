@@ -11,7 +11,8 @@ interface GameState {
 
 export class Game extends ReactComponent {
     registry : Registry = new Registry();
-    
+    deltaTime: number = 100;
+
     state : GameState = {
         isRunning: false,
         windowHeight: 0,
@@ -22,14 +23,12 @@ export class Game extends ReactComponent {
     constructor(props: any = null) {
         super(props);
         this.handleResize = this.handleResize.bind(this);
-        console.log("constructor");
 
         this.registry.AddSystem("RenderSystem");
 
     }
 
     componentDidMount() : void {
-        console.log("component did mount, state: " , this.state);
         if(this.state.isRunning === false ) 
             this.setState({
                 isRunning: true
@@ -63,17 +62,21 @@ export class Game extends ReactComponent {
         const car : Entity = this.registry.CreateEntity();
         
         car.AddComponent("RigidBodyComponent", 32,32, 32,32);
-        this.Update();
 
-        // while(this.state.isRunning) {
-            // this.Render();
-        // }
+        setInterval(() => {
+            this.Render();
+            this.Update();
+        }, 1000);
     }
 
     private async Update() : Promise<void> {
+        this.registry.UpdateSystems();
         this.registry.AddEntitiesToSystem();
         
         
+    }
+
+    private Render() : void {
     }
 
     private Destroy (): void {
