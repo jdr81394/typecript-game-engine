@@ -1,4 +1,5 @@
 import { Game } from "../Game/Game";
+import ReactLogo from "../../public/reactLogo.png";
 
 export class Entity {
     private id: number;
@@ -19,7 +20,7 @@ export class Entity {
 
 };
 
-export type ComponentType = "RigidBodyComponent" | "VelocityComponent";
+export type ComponentType = "RigidBodyComponent" | "VelocityComponent" | "SpriteComponent";
 
 export class IComponent {
     static nextId : number;
@@ -63,6 +64,14 @@ class VelocityComponent extends Component {
         super();
         this.xVelocity = xVelocity;
         this.yVelocity = yVelocity;
+    }
+}
+
+
+class SpriteComponent extends Component {
+    
+    constructor(public name: string) {
+        super();
     }
 }
 
@@ -180,6 +189,7 @@ export class Registry {
         }
 
         // Now, let's create a new component and put it into that place
+        console.log(args);
 
         let instance: TComponent = eval(`new ${componentType}(${args})`);       // Really bad practice for prod env but for fun this is acceptable
 
@@ -305,6 +315,7 @@ class RenderSystem extends System {
     constructor() {
         super();
         this.RequireComponent("RigidBodyComponent");
+        this.RequireComponent("SpriteComponent");
     }
 
     public Update(canvas : HTMLCanvasElement) : void {
@@ -313,19 +324,28 @@ class RenderSystem extends System {
         if(canvas) {
             this.entities.forEach((entity) => {
                 
-                const rigidBodyComponent : RigidBodyComponent = entity.registry.GetComponent("RigidBodyComponent", entity.GetId()) as RigidBodyComponent;
+                const entityId =  entity.GetId();
+                const rigidBodyComponent : RigidBodyComponent = entity.registry.GetComponent("RigidBodyComponent",entityId) as RigidBodyComponent;
+                const spriteComponent : SpriteComponent = entity.registry.GetComponent("SpriteComponent", entityId) as SpriteComponent;
+                const name = spriteComponent.name;
+
                 const ctx : CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
-                
+
                 const height = rigidBodyComponent.height as unknown as number;
                 const width = rigidBodyComponent.width as unknown as number;
                 const x = rigidBodyComponent.x as unknown as number;
                 const y = rigidBodyComponent.y as unknown as number;
                 
-                // this.DrawSquare(ctx,x,y,width,height);
-                this.DrawCircle(ctx, x,y, 10);
                 
+                let img = new Image();
+                img.height = height;
+                img.width = width;
 
-            });
+                img.src = require(`../Sprites/${name}.png`);
+
+                ctx.drawImage(img,x,y, width, height);}
+
+            );
         }
 
     }
@@ -375,7 +395,6 @@ class VelocitySystem extends System {
 
 
     public Update() {
-        console.log("entities: " , this.entities);
         this.entities.forEach((entity) => {
             
             const entityId = entity.GetId();

@@ -12,7 +12,7 @@ interface GameState {
 
 export class Game extends ReactComponent {
     registry : Registry = new Registry();
-    deltaTime: number = 100;
+    deltaTime: number = 33;
     canvas: HTMLCanvasElement | null = null; 
     rootElement: HTMLDivElement = document.getElementById("root") as HTMLDivElement;
 
@@ -30,6 +30,7 @@ export class Game extends ReactComponent {
 
         this.registry.AddSystem("RenderSystem");
         this.registry.AddSystem("VelocitySystem");
+
     }
 
     componentDidMount() : void {
@@ -72,13 +73,15 @@ export class Game extends ReactComponent {
 
         car.AddComponent("RigidBodyComponent", 100,100, 32,32);
         car2.AddComponent("VelocityComponent" , 1, 0);
+        car2.AddComponent("SpriteComponent", "'reactLogo'");
         car2.AddComponent("RigidBodyComponent", 32,32, 32,32);
 
+        // eval(`new SpriteComponent("reactLogo")`);
 
         setInterval(() => {
             this.Render();
             this.Update();
-        }, 30);
+        }, this.deltaTime);
     }
 
     private async Update() : Promise<void> {
@@ -101,7 +104,9 @@ export class Game extends ReactComponent {
     };
 
     render() {
-        return (<canvas  width={this.state.windowWidth} height={this.state.windowHeight} id="canvas"></canvas>)
+        return (
+        <canvas  width={this.state.windowWidth} height={this.state.windowHeight} id="canvas"></canvas>
+        )
     }
 }
 
