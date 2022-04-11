@@ -284,28 +284,32 @@ class RenderSystem extends System {
         this.RequireComponent("RigidBodyComponent");
     }
 
-    public Update() : HTMLElement[] {
-        // console.log("hi",  this.entities);
+    public Update(canvas : HTMLCanvasElement) : void {
 
-        let resultArr: HTMLElement[] = [];
+        
+        if(canvas) {
+            this.entities.forEach((entity) => {
+                
+                const rigidBodyComponent : RigidBodyComponent = entity.registry.GetComponent("RigidBodyComponent", entity.GetId()) as RigidBodyComponent;
+                const ctx : CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
+                
+                const height = rigidBodyComponent.height as unknown as number;
+                const width = rigidBodyComponent.width as unknown as number;
+                const x = rigidBodyComponent.x as unknown as number;
+                const y = rigidBodyComponent.y as unknown as number;
+                
+                
+                ctx.moveTo(x,y);
+                ctx.lineTo(x + width, y);
+                ctx.lineTo(x + width , y + height);
+                ctx.lineTo(x, y + height);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                
 
-        this.entities.forEach((entity) => {
-            
-            const rigidBodyComponent : RigidBodyComponent = entity.registry.GetComponent("RigidBodyComponent", entity.GetId()) as RigidBodyComponent;
+            });
+        }
 
-            const element = document.createElement("div");
-
-            element.innerHTML = "newly created object";
-            element.style.height = rigidBodyComponent.height as unknown as string + "px";
-            element.style.width = rigidBodyComponent.width as unknown as string + "px";
-            element.style.left = rigidBodyComponent.x as unknown as string + "px";
-            element.style.top = rigidBodyComponent.y as unknown as string  + "px";
-            
-            resultArr.push(element);
-
-        });
-        // console.log("result arr: " , resultArr);
-        return resultArr;
     }
 
 

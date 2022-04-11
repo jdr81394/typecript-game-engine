@@ -13,7 +13,8 @@ interface GameState {
 export class Game extends ReactComponent {
     registry : Registry = new Registry();
     deltaTime: number = 100;
-    // static elementsToRender: HTMLElement[] = [];
+    canvas: HTMLCanvasElement | null = null; 
+    rootElement: HTMLDivElement = document.getElementById("root") as HTMLDivElement;
 
     state : GameState = {
         isRunning: false,
@@ -28,7 +29,6 @@ export class Game extends ReactComponent {
         this.handleResize = this.handleResize.bind(this);
 
         this.registry.AddSystem("RenderSystem");
-
     }
 
     componentDidMount() : void {
@@ -38,6 +38,9 @@ export class Game extends ReactComponent {
             }, () => this.Run() );
 
         this.setListeners();
+        this.canvas = document.getElementById("canvas") as HTMLCanvasElement;
+        this.handleResize();
+
     }
 
     componentDidUpdate() {
@@ -54,6 +57,7 @@ export class Game extends ReactComponent {
 
     public handleResize(): void {
         const { innerHeight, innerWidth } = window;
+
         this.setState({
             windowHeight: innerHeight,
             windowWidth: innerWidth
@@ -65,7 +69,7 @@ export class Game extends ReactComponent {
         const car : Entity = this.registry.CreateEntity();
         const car2 : Entity = this.registry.CreateEntity();
 
-        car.AddComponent("RigidBodyComponent", 32,32, 32,32);
+        car.AddComponent("RigidBodyComponent", 100,100, 32,32);
         car2.AddComponent("RigidBodyComponent", 32,32, 32,32);
 
         setInterval(() => {
@@ -75,20 +79,15 @@ export class Game extends ReactComponent {
     }
 
     private async Update() : Promise<void> {
-        // this.registry.UpdateSystems();
-        this.registry.AddEntitiesToSystem();
-        // for(let i = 0; i < this.registry.systems.length; i++) {
-        //     this.registry.systems[i].Update();
-        // }
-        const result = this.registry.GetSystem("RenderSystem").Update();
 
-        this.setState({
-            elementsToRender: result
-        });
+  
+
     }
 
     private Render() : void {
-
+        this.registry.AddEntitiesToSystem();
+ 
+        this.registry.GetSystem("RenderSystem").Update(this.canvas);
     }
 
     private Destroy (): void {
@@ -96,11 +95,7 @@ export class Game extends ReactComponent {
     };
 
     render() {
-        return(<div>
-            {this.state.elementsToRender.map((x, i) => {
-                return <h1 key={i}> hi</h1>;
-            })}
-        </div>)
+        return (<canvas  width={this.state.windowWidth} height={this.state.windowHeight} id="canvas"></canvas>)
     }
 }
 
