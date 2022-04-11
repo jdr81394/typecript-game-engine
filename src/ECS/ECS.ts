@@ -36,7 +36,7 @@ export class Component extends IComponent {
         return Component.id;
     }
 };
-
+/* CUSTOM COMPONENTS */
 class RigidBodyComponent extends Component {
     x: number;
     y: number;
@@ -52,6 +52,22 @@ class RigidBodyComponent extends Component {
         this.height = args[3];
     };
 }
+
+
+class VelocityComponent extends Component {
+
+    xVelocity: number;
+    yVelocity: number;
+
+    constructor(xVelocity: number, yVelocity: number) {
+        super();
+        this.xVelocity = xVelocity;
+        this.yVelocity = yVelocity;
+    }
+}
+
+/* END OF CUSTOM COMPONENTS */
+
 class IPool {
     constructor() {}
 };
@@ -115,7 +131,7 @@ export class System{
     
 };
 
-export type SystemTypes = "RenderSystem";
+export type SystemTypes = "RenderSystem" | "VelocitySystem";
 
 
 
@@ -147,12 +163,15 @@ export class Registry {
 
         const componentExists = Registry.componentMap[componentType];
 
-        if(!componentExists) {
+        if(componentExists === undefined) {
             Registry.componentMap[componentType] = Registry.numberOfComponents++;
         }
 
+
+
         const componentId : number  = Registry.componentMap[componentType] as number;
         const entityId = entity.GetId();
+
 
         // Now lets go through the componentPool and make a componentPool if one does not already exist
         if(!this.componentPools[componentId])  {    // if componentPool does not exist
@@ -205,13 +224,10 @@ export class Registry {
                 
                 // component signature of system 1
                 for(let j = 0; j < systemComponentSignature.length; j++) {
-                    console.log("the current entity,  " , this.entitiesToAdd[m]);
 
                     if(systemComponentSignature[j] === true) {
-                        console.log(systemComponentSignature);
                         if(this.entityComponentSignature[m] && !this.entityComponentSignature[m][j]) {
                             // Somehow logic is making it if it has the component to go in here..
-                            console.log("should only be 1,  " , this.entitiesToAdd[m]);
                             this.systems[i].AddEntityToSystem(this.entitiesToAdd[m]);
                             break;
                         }
@@ -234,8 +250,8 @@ export class Registry {
 
         const system = eval(`new ${systemType}()`);
 
-        this.systems.push(system);
 
+        this.systems.push(system);
         if(!Registry.systemMap[systemType] ) {
 
             const indice = this.systems.length - 1;
@@ -276,6 +292,7 @@ export class Registry {
 
 }
 
+/* CUSTOM SYSTEM SECTION */
 
 class RenderSystem extends System {
 
@@ -298,13 +315,8 @@ class RenderSystem extends System {
                 const x = rigidBodyComponent.x as unknown as number;
                 const y = rigidBodyComponent.y as unknown as number;
                 
-                
-                ctx.moveTo(x,y);
-                ctx.lineTo(x + width, y);
-                ctx.lineTo(x + width , y + height);
-                ctx.lineTo(x, y + height);
-                ctx.lineTo(x, y);
-                ctx.stroke();
+                // this.drawSquare(ctx,x,y,width,height);
+                this.drawCircle(ctx, x,y, 10);
                 
 
             });
@@ -312,6 +324,55 @@ class RenderSystem extends System {
 
     }
 
+    private drawSquare(
+        ctx : CanvasRenderingContext2D,  
+        x : number,
+        y : number, 
+        width : number,
+        height : number
+    ) : void {
+        ctx.moveTo(x,y);
+        ctx.lineTo(x + width, y);
+        ctx.lineTo(x + width , y + height);
+        ctx.lineTo(x, y + height);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    }
+
+    private drawCircle(
+        ctx:CanvasRenderingContext2D,
+        x: number, 
+        y: number,
+        radius: number) : void {
+            ctx.beginPath();
+            ctx.arc(x,y,radius,0, 2 * Math.PI);
+            ctx.stroke();
+        }
+
 
 }
 
+class VelocitySystem extends System {
+    
+    constructor() {
+        super();
+        this.RequireComponent("VelocityComponent");
+    }
+
+
+    public Update() {
+        console.log("entities: " , this.entities);
+        this.entities.forEach((entity) => {
+            
+            const entityId = entity.GetId();
+            const velocityComponent: VelocityComponent = entity.registry.GetComponent("VelocityComponent", entityId) as VelocityComponent;
+            let rigidBodyComponent : RigidBodyComponent = entity.registry.GetComponent("RigidBodyComponent", entityId) as RigidBodyComponent;
+
+            rigidBodyComponent.x += velocityComponent.xVelocity;
+            rigidBodyComponent.y += velocityComponent.yVelocity;
+
+        })
+    }
+}
+
+/* END OF SYSTEM SECTION */
