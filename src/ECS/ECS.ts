@@ -214,28 +214,37 @@ export class Registry {
 
     public AddEntitiesToSystem(): void {
         // Imagine this is a stack data structure, LIFO
+        if(this.entitiesToAdd.length > 0) {
+            console.log("this.entitiesToAdd" , this.entitiesToAdd);
 
-        for(let m = 0 ; m < this.entitiesToAdd.length; m++) {
-            // entity 1
-            // system 1
-            for(let i = 0; i < this.systems.length; i++) {
+            for(let m = 0 ; m < this.entitiesToAdd.length; m++) {
+                // entity 1
+                // system 1
+                const entityId = this.entitiesToAdd[m].GetId();
+                for(let i = 0; i < this.systems.length; i++) {
 
-                const systemComponentSignature : boolean[] = this.systems[i].GetComponentSignature();
-                
-                // component signature of system 1
-                for(let j = 0; j < systemComponentSignature.length; j++) {
+                    const systemComponentSignature : boolean[] = this.systems[i].GetComponentSignature();
+                    
+                    // component signature of system 1
+                    for(let j = 0; j < systemComponentSignature.length; j++) {
 
-                    if(systemComponentSignature[j] === true) {
-                        if(this.entityComponentSignature[m] && !this.entityComponentSignature[m][j]) {
-                            // Somehow logic is making it if it has the component to go in here..
-                            this.systems[i].AddEntityToSystem(this.entitiesToAdd[m]);
+                        console.log("systemComponentSignature[j]" , systemComponentSignature[j] , " this.entityComponentSignature[j]" , this.entityComponentSignature[j]);
+                        if(systemComponentSignature[j] === true && !this.entityComponentSignature[entityId][j]) {
+                            // If a part of the system component signature was true yet the same corresponding part of the entity's component signature was false 
+                            console.log("BREAK MOTHERFUCKA");
                             break;
                         }
-                    }
-                    
-                }
 
-                // If nothing was out of line, then this was successful and add the entity to the system
+                        // if at end of loop, loop has not yet broken
+                        if(j === systemComponentSignature.length - 1) {
+                            // console.log("this is the systmem: ", this.systems[i], " and this is the entity: " , this.entitiesToAdd[m]);
+                            this.systems[i].AddEntityToSystem(this.entitiesToAdd[m]);
+                        }
+                        
+                    }
+
+                    // If nothing was out of line, then this was successful and add the entity to the system
+                }
             }
         }
 

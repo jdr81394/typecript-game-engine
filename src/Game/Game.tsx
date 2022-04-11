@@ -29,6 +29,7 @@ export class Game extends ReactComponent {
         this.handleResize = this.handleResize.bind(this);
 
         this.registry.AddSystem("RenderSystem");
+        this.registry.AddSystem("VelocitySystem");
     }
 
     componentDidMount() : void {
@@ -70,7 +71,9 @@ export class Game extends ReactComponent {
         const car2 : Entity = this.registry.CreateEntity();
 
         car.AddComponent("RigidBodyComponent", 100,100, 32,32);
+        car2.AddComponent("VelocityComponent" , 10, 10);
         car2.AddComponent("RigidBodyComponent", 32,32, 32,32);
+
 
         setInterval(() => {
             this.Render();
@@ -81,7 +84,7 @@ export class Game extends ReactComponent {
     private async Update() : Promise<void> {
 
   
-
+        this.registry.GetSystem("VelocitySystem").Update();
     }
 
     private Render() : void {
