@@ -71,14 +71,14 @@ export class Game extends ReactComponent {
         const car2 : Entity = this.registry.CreateEntity();
 
         car.AddComponent("RigidBodyComponent", 100,100, 32,32);
-        car2.AddComponent("VelocityComponent" , 10, 10);
+        car2.AddComponent("VelocityComponent" , 1, 0);
         car2.AddComponent("RigidBodyComponent", 32,32, 32,32);
 
 
         setInterval(() => {
             this.Render();
             this.Update();
-        }, 1000);
+        }, 30);
     }
 
     private async Update() : Promise<void> {
@@ -88,6 +88,9 @@ export class Game extends ReactComponent {
     }
 
     private Render() : void {
+
+        this.registry.GetSystem("RenderSystem").ClearCanvas(this.canvas);
+
         this.registry.AddEntitiesToSystem();
  
         this.registry.GetSystem("RenderSystem").Update(this.canvas);

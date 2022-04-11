@@ -215,7 +215,6 @@ export class Registry {
     public AddEntitiesToSystem(): void {
         // Imagine this is a stack data structure, LIFO
         if(this.entitiesToAdd.length > 0) {
-            console.log("this.entitiesToAdd" , this.entitiesToAdd);
 
             for(let m = 0 ; m < this.entitiesToAdd.length; m++) {
                 // entity 1
@@ -228,10 +227,8 @@ export class Registry {
                     // component signature of system 1
                     for(let j = 0; j < systemComponentSignature.length; j++) {
 
-                        console.log("systemComponentSignature[j]" , systemComponentSignature[j] , " this.entityComponentSignature[j]" , this.entityComponentSignature[j]);
                         if(systemComponentSignature[j] === true && !this.entityComponentSignature[entityId][j]) {
                             // If a part of the system component signature was true yet the same corresponding part of the entity's component signature was false 
-                            console.log("BREAK MOTHERFUCKA");
                             break;
                         }
 
@@ -324,8 +321,8 @@ class RenderSystem extends System {
                 const x = rigidBodyComponent.x as unknown as number;
                 const y = rigidBodyComponent.y as unknown as number;
                 
-                // this.drawSquare(ctx,x,y,width,height);
-                this.drawCircle(ctx, x,y, 10);
+                // this.DrawSquare(ctx,x,y,width,height);
+                this.DrawCircle(ctx, x,y, 10);
                 
 
             });
@@ -333,7 +330,15 @@ class RenderSystem extends System {
 
     }
 
-    private drawSquare(
+    public ClearCanvas(canvas : HTMLCanvasElement) {
+        if(canvas) {
+            const ctx : CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
+
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+        }
+    }
+
+    private DrawSquare(
         ctx : CanvasRenderingContext2D,  
         x : number,
         y : number, 
@@ -348,7 +353,7 @@ class RenderSystem extends System {
         ctx.stroke();
     }
 
-    private drawCircle(
+    private DrawCircle(
         ctx:CanvasRenderingContext2D,
         x: number, 
         y: number,
@@ -356,7 +361,7 @@ class RenderSystem extends System {
             ctx.beginPath();
             ctx.arc(x,y,radius,0, 2 * Math.PI);
             ctx.stroke();
-        }
+    }
 
 
 }
