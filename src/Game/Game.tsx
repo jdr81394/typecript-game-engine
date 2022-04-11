@@ -5,18 +5,21 @@ import { Entity, Component, System, Registry, ComponentType } from "../ECS/ECS";
 interface GameState {
     isRunning: boolean;
     windowHeight: number,
-    windowWidth: number
+    windowWidth: number,
+    elementsToRender: HTMLElement[]
 };
 
 
 export class Game extends ReactComponent {
     registry : Registry = new Registry();
     deltaTime: number = 100;
+    // static elementsToRender: HTMLElement[] = [];
 
     state : GameState = {
         isRunning: false,
         windowHeight: 0,
-        windowWidth: 0
+        windowWidth: 0,
+        elementsToRender: []
     }
 
 
@@ -60,8 +63,10 @@ export class Game extends ReactComponent {
     private Run() : void {
 
         const car : Entity = this.registry.CreateEntity();
-        
+        const car2 : Entity = this.registry.CreateEntity();
+
         car.AddComponent("RigidBodyComponent", 32,32, 32,32);
+        car2.AddComponent("RigidBodyComponent", 32,32, 32,32);
 
         setInterval(() => {
             this.Render();
@@ -70,13 +75,20 @@ export class Game extends ReactComponent {
     }
 
     private async Update() : Promise<void> {
-        this.registry.UpdateSystems();
+        // this.registry.UpdateSystems();
         this.registry.AddEntitiesToSystem();
-        
-        
+        // for(let i = 0; i < this.registry.systems.length; i++) {
+        //     this.registry.systems[i].Update();
+        // }
+        const result = this.registry.GetSystem("RenderSystem").Update();
+
+        this.setState({
+            elementsToRender: result
+        });
     }
 
     private Render() : void {
+
     }
 
     private Destroy (): void {
@@ -85,7 +97,9 @@ export class Game extends ReactComponent {
 
     render() {
         return(<div>
-            game
+            {this.state.elementsToRender.map((x, i) => {
+                return <h1 key={i}> hi</h1>;
+            })}
         </div>)
     }
 }

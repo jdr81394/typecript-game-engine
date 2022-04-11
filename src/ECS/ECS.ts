@@ -1,4 +1,4 @@
-// import RenderSystem from "../Systems/RenderSystem";
+import { Game } from "../Game/Game";
 
 export class Entity {
     private id: number;
@@ -42,6 +42,7 @@ class RigidBodyComponent extends Component {
     y: number;
     width: number;
     height: number;
+
     constructor(...args: number[]){
 
         super();
@@ -112,8 +113,9 @@ export class System{
         return this.componentSignature;
     }
     
-
 };
+
+export type SystemTypes = "RenderSystem";
 
 
 
@@ -134,7 +136,7 @@ export class Registry {
 
     private entitiesToAdd : Entity[] = [];
 
-    private systems : any[] = [];
+    public systems : any[] = [];
 
     static systemMap: any = new Object();
 
@@ -150,7 +152,6 @@ export class Registry {
         }
 
         const componentId : number  = Registry.componentMap[componentType] as number;
-
         const entityId = entity.GetId();
 
         // Now lets go through the componentPool and make a componentPool if one does not already exist
@@ -204,10 +205,14 @@ export class Registry {
                 
                 // component signature of system 1
                 for(let j = 0; j < systemComponentSignature.length; j++) {
+                    console.log("the current entity,  " , this.entitiesToAdd[m]);
 
                     if(systemComponentSignature[j] === true) {
-                        console.log(systemComponentSignature[j]);
-                        if(!this.entityComponentSignature[m][j]) {
+                        console.log(systemComponentSignature);
+                        if(this.entityComponentSignature[m] && !this.entityComponentSignature[m][j]) {
+                            // Somehow logic is making it if it has the component to go in here..
+                            console.log("should only be 1,  " , this.entitiesToAdd[m]);
+                            this.systems[i].AddEntityToSystem(this.entitiesToAdd[m]);
                             break;
                         }
                     }
@@ -215,7 +220,6 @@ export class Registry {
                 }
 
                 // If nothing was out of line, then this was successful and add the entity to the system
-                this.systems[i].AddEntityToSystem(this.entitiesToAdd[m]);
             }
         }
 
@@ -258,6 +262,15 @@ export class Registry {
         return component;
 
     }
+
+
+    public GetSystem(systemType : SystemTypes) : any {
+        const systemId: number = Registry.systemMap[systemType];
+
+        const system : System = this.systems[systemId];
+
+        return system;
+    }
     
 
 
@@ -271,15 +284,28 @@ class RenderSystem extends System {
         this.RequireComponent("RigidBodyComponent");
     }
 
-    public Update() : void {
+    public Update() : HTMLElement[] {
+        // console.log("hi",  this.entities);
+
+        let resultArr: HTMLElement[] = [];
 
         this.entities.forEach((entity) => {
+            
+            const rigidBodyComponent : RigidBodyComponent = entity.registry.GetComponent("RigidBodyComponent", entity.GetId()) as RigidBodyComponent;
 
-            const rigidBodyComponent : Component = entity.registry.GetComponent("RigidBodyComponent", entity.GetId());
+            const element = document.createElement("div");
 
-            console.log("rigidbodycomponent!  : " , rigidBodyComponent);
+            element.innerHTML = "newly created object";
+            element.style.height = rigidBodyComponent.height as unknown as string + "px";
+            element.style.width = rigidBodyComponent.width as unknown as string + "px";
+            element.style.left = rigidBodyComponent.x as unknown as string + "px";
+            element.style.top = rigidBodyComponent.y as unknown as string  + "px";
+            
+            resultArr.push(element);
 
         });
+        // console.log("result arr: " , resultArr);
+        return resultArr;
     }
 
 
