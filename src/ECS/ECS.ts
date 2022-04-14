@@ -69,9 +69,25 @@ class VelocityComponent extends Component {
 
 
 class SpriteComponent extends Component {
-    
-    constructor(public name: string) {
+    name: string;
+    horizontalFrames: number;
+    startingHorizontalFrame: number;
+    verticalFrames: number;
+    startingVerticalFrame: number;
+    isLoop: boolean;
+    height: number;
+    width: number;
+
+    constructor(name: string, height: number = 32, width: number = 32, horizontalFrames: number = 1, startingHorizontalFrame: number = 1, verticalFrames: number = 1, startingVerticalFrame: number = 1, isLoop: boolean = true) {
         super();
+        this.name = name;
+        this.height = height;
+        this.width = width;
+        this.horizontalFrames = horizontalFrames;
+        this.startingHorizontalFrame = startingHorizontalFrame;
+        this.verticalFrames = verticalFrames;
+        this.startingVerticalFrame = startingVerticalFrame;
+        this.isLoop = isLoop;
     }
 }
 
@@ -329,12 +345,18 @@ class RenderSystem extends System {
                 const spriteComponent : SpriteComponent = entity.registry.GetComponent("SpriteComponent", entityId) as SpriteComponent;
                 const name = spriteComponent.name;
 
+                
+
                 const ctx : CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
+
 
                 const height = rigidBodyComponent.height as unknown as number;
                 const width = rigidBodyComponent.width as unknown as number;
                 const x = rigidBodyComponent.x as unknown as number;
                 const y = rigidBodyComponent.y as unknown as number;
+
+                const spriteWidth = spriteComponent.width;
+                const spriteHeight = spriteComponent.height;
                 
                 
                 let img = new Image();
@@ -343,7 +365,7 @@ class RenderSystem extends System {
 
                 img.src = require(`../Sprites/${name}.png`);
 
-                ctx.drawImage(img,x,y, width, height);}
+                ctx.drawImage(img, 0, 0, spriteWidth, spriteHeight , x,y, width, height);}
 
             );
         }

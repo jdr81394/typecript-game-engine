@@ -6,7 +6,6 @@ interface GameState {
     isRunning: boolean;
     windowHeight: number,
     windowWidth: number,
-    elementsToRender: HTMLElement[]
 };
 
 
@@ -20,7 +19,6 @@ export class Game extends ReactComponent {
         isRunning: false,
         windowHeight: 0,
         windowWidth: 0,
-        elementsToRender: []
     }
 
 
@@ -73,8 +71,8 @@ export class Game extends ReactComponent {
 
         car.AddComponent("RigidBodyComponent", 100,100, 32,32);
         car2.AddComponent("VelocityComponent" , 1, 0);
-        car2.AddComponent("SpriteComponent", "'reactLogo'");
-        car2.AddComponent("RigidBodyComponent", 32,32, 32,32);
+        car2.AddComponent("SpriteComponent", "'chopper-spritesheet'",32,32, 4, 1, 4, 1, true);
+        car2.AddComponent("RigidBodyComponent", 32,32, 52,82);
 
         // eval(`new SpriteComponent("reactLogo")`);
 
