@@ -1,4 +1,5 @@
 import { Component as ReactComponent } from "react";
+import { TupleType } from "typescript";
 import RigidBodyComponent from "../Components/RigidBodyComponent";
 import { Entity, Component, System, Registry, ComponentType } from "../ECS/ECS";
 
@@ -66,13 +67,14 @@ export class Game extends ReactComponent {
 
     private Run() : void {
 
-        const car : Entity = this.registry.CreateEntity();
-        const car2 : Entity = this.registry.CreateEntity();
+        const megaman : Entity = this.registry.CreateEntity();
 
-        car.AddComponent("RigidBodyComponent", 100,100, 32,32);
-        car2.AddComponent("VelocityComponent" , 1, 0);
-        car2.AddComponent("SpriteComponent", "'chopper-spritesheet'",32,32, 4, 1, 4, 1, true);
-        car2.AddComponent("RigidBodyComponent", 32,32, 52,82);
+        // key is the x axis, value is the y axis;
+        const megamanStandingAnimation: Array<number> = [0,0,1,0];      // A Set of tuples would work best but Typescript doesn't have a true tuple data structure
+        const megamanRunningAnimation: Array<number> = [0,2,0,3,0,4,0,5];
+        megaman.AddComponent("VelocityComponent" , 1, 0);
+        megaman.AddComponent("SpriteComponent", "'megaman-all'",60,32, JSON.stringify(megamanStandingAnimation),JSON.stringify(megamanRunningAnimation));
+        megaman.AddComponent("RigidBodyComponent", 32,32, 52,82);
 
         // eval(`new SpriteComponent("reactLogo")`);
 

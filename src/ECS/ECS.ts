@@ -70,24 +70,28 @@ class VelocityComponent extends Component {
 
 class SpriteComponent extends Component {
     name: string;
-    horizontalFrames: number;
-    startingHorizontalFrame: number;
-    verticalFrames: number;
-    startingVerticalFrame: number;
-    isLoop: boolean;
     height: number;
     width: number;
+    standingAnimation: number[];   // odd x axis, even y axis
+    runningAnimation: number[];
+    isLooped : boolean;
 
-    constructor(name: string, height: number = 32, width: number = 32, horizontalFrames: number = 1, startingHorizontalFrame: number = 1, verticalFrames: number = 1, startingVerticalFrame: number = 1, isLoop: boolean = true) {
+    constructor(
+        name: string,
+        height: number,
+        width: number,
+        standingAnimation: number[],
+        runningAnimation: number[],
+        isLooped: boolean
+        ) {
         super();
-        this.name = name;
-        this.height = height;
+        this.name = name; 
+        this.height = height; 
         this.width = width;
-        this.horizontalFrames = horizontalFrames;
-        this.startingHorizontalFrame = startingHorizontalFrame;
-        this.verticalFrames = verticalFrames;
-        this.startingVerticalFrame = startingVerticalFrame;
-        this.isLoop = isLoop;
+        this.standingAnimation = standingAnimation; 
+        this.runningAnimation = runningAnimation;
+        this.isLooped =  isLooped;
+
     }
 }
 
@@ -204,9 +208,9 @@ export class Registry {
             this.componentPools[componentId] = newComponentPool;
         }
 
-        // Now, let's create a new component and put it into that place
         console.log(args);
-
+        console.log(`new ${componentType}(${args})`);
+        // Now, let's create a new component and put it into that place
         let instance: TComponent = eval(`new ${componentType}(${args})`);       // Really bad practice for prod env but for fun this is acceptable
 
         this.componentPools[componentId].SetIndice(entityId, instance);
@@ -357,15 +361,31 @@ class RenderSystem extends System {
 
                 const spriteWidth = spriteComponent.width;
                 const spriteHeight = spriteComponent.height;
-                
-                
+                const standingAnimation = spriteComponent.standingAnimation;
+                const runningAnimation = spriteComponent.runningAnimation;
+
+                let currentXAxis: number = 0;
+                let currentYAxis:number = 0;
+
                 let img = new Image();
                 img.height = height;
                 img.width = width;
 
                 img.src = require(`../Sprites/${name}.png`);
 
-                ctx.drawImage(img, 0, 0, spriteWidth, spriteHeight , x,y, width, height);}
+                for(let i = 0; i + 1 < standingAnimation.length; i++) {
+                    // this means its even and therefore the X axis
+                    currentXAxis = standingAnimation[i];
+                    currentYAxis = standingAnimation[i + 1];
+                    console.log(standingAnimation);
+                    console.log(currentXAxis, "  " ,currentYAxis);
+                    console.log("sprite height: " , spriteHeight);
+                    ctx.drawImage(img, currentXAxis * spriteWidth, currentYAxis * spriteHeight, spriteWidth, spriteHeight , x,y, width, height);
+                }
+                
+                
+                
+            }
 
             );
         }
